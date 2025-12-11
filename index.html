@@ -1,499 +1,451 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <meta http-equiv="Content-Style-Type" content="text/css">
-  <title></title>
-  <meta name="Generator" content="Cocoa HTML Writer">
-  <meta name="CocoaVersion" content="2685.1">
-  <style type="text/css">
-    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
-    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
+  <meta charset="utf-8" />
+  <title>SCMD Drug Search (NHSBSA)</title>
+
+  <!-- jQuery for JSONP calls to the CKAN Data API -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 1.5rem;
+      max-width: 1200px;
+    }
+    h1 {
+      margin-bottom: 0.5rem;
+    }
+    p.lead {
+      margin-top: 0;
+      color: #444;
+      font-size: 0.95rem;
+    }
+    form {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 0.75rem 1.5rem;
+      align-items: end;
+      margin: 1rem 0;
+      padding: 0.75rem 1rem;
+      border-radius: 6px;
+      border: 1px solid #ddd;
+      background: #fafafa;
+    }
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+      font-size: 0.9rem;
+    }
+    input[type="text"],
+    input[type="month"] {
+      width: 100%;
+      padding: 0.35rem 0.5rem;
+      font-size: 0.9rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    button {
+      padding: 0.5rem 0.8rem;
+      font-size: 0.9rem;
+      border-radius: 4px;
+      border: 1px solid #0072ce;
+      background: #0072ce;
+      color: white;
+      cursor: pointer;
+      margin-right: 0.25rem;
+    }
+    button:disabled {
+      opacity: 0.6;
+      cursor: default;
+    }
+    #status {
+      margin-top: 0.5rem;
+      font-style: italic;
+      font-size: 0.9rem;
+    }
+    table {
+      margin-top: 1rem;
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 0.85rem;
+    }
+    thead {
+      position: sticky;
+      top: 0;
+      background: #f0f0f0;
+      z-index: 1;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 0.25rem 0.5rem;
+      text-align: left;
+      vertical-align: top;
+    }
+    tbody tr:nth-child(even) {
+      background: #fafafa;
+    }
+    .number {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+    .muted {
+      color: #666;
+      font-size: 0.8rem;
+    }
   </style>
 </head>
 <body>
-<p class="p1">&lt;!DOCTYPE html&gt;</p>
-<p class="p1">&lt;html lang="en"&gt;</p>
-<p class="p1">&lt;head&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;meta charset="utf-8" /&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;title&gt;SCMD Drug Search (NHSBSA)&lt;/title&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;!-- jQuery for JSONP calls to the CKAN Data API --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;script src="https://code.jquery.com/jquery-3.7.1.min.js"&gt;&lt;/script&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;style&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>body {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>margin: 1.5rem;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>max-width: 1200px;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>h1 {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>margin-bottom: 0.5rem;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>p.lead {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>margin-top: 0;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>color: #444;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>font-size: 0.95rem;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>form {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>display: grid;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));</p>
-<p class="p1"><span class="Apple-converted-space">      </span>gap: 0.75rem 1.5rem;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>align-items: end;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>margin: 1rem 0;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>padding: 0.75rem 1rem;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>border-radius: 6px;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>border: 1px solid #ddd;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>background: #fafafa;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>label {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>display: block;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>font-weight: 600;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>margin-bottom: 0.25rem;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>font-size: 0.9rem;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>input[type="text"],</p>
-<p class="p1"><span class="Apple-converted-space">    </span>input[type="month"] {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>width: 100%;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>padding: 0.35rem 0.5rem;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>font-size: 0.9rem;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>border: 1px solid #ccc;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>border-radius: 4px;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>box-sizing: border-box;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>button {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>padding: 0.5rem 0.8rem;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>font-size: 0.9rem;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>border-radius: 4px;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>border: 1px solid #0072ce;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>background: #0072ce;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>color: white;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>cursor: pointer;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>margin-right: 0.25rem;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>button:disabled {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>opacity: 0.6;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>cursor: default;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>#status {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>margin-top: 0.5rem;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>font-style: italic;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>font-size: 0.9rem;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>table {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>margin-top: 1rem;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>border-collapse: collapse;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>width: 100%;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>font-size: 0.85rem;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>thead {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>position: sticky;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>top: 0;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>background: #f0f0f0;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>z-index: 1;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>th, td {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>border: 1px solid #ccc;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>padding: 0.25rem 0.5rem;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>text-align: left;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>vertical-align: top;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>tbody tr:nth-child(even) {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>background: #fafafa;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>.number {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>text-align: right;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>font-variant-numeric: tabular-nums;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>.muted {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>color: #666;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>font-size: 0.8rem;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;/style&gt;</p>
-<p class="p1">&lt;/head&gt;</p>
-<p class="p1">&lt;body&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;h1&gt;Secondary Care Medicines Search&lt;/h1&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;p class="lead"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>Queries the NHSBSA &lt;strong&gt;Provisional Secondary Care Medicines Data (SCMD)&lt;/strong&gt; via the</p>
-<p class="p1"><span class="Apple-converted-space">    </span>CKAN Data API and filters by &lt;code&gt;VMP_PRODUCT_NAME&lt;/code&gt;.</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;/p&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;form id="queryForm"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;label for="drugName"&gt;Drug name (VMP_PRODUCT_NAME contains…)&lt;/label&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;input</p>
-<p class="p1"><span class="Apple-converted-space">        </span>id="drugName"</p>
-<p class="p1"><span class="Apple-converted-space">        </span>type="text"</p>
-<p class="p1"><span class="Apple-converted-space">        </span>placeholder="e.g. Berotralstat"</p>
-<p class="p1"><span class="Apple-converted-space">        </span>required</p>
-<p class="p1"><span class="Apple-converted-space">      </span>/&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;label for="startMonth"&gt;Start month (YYYY‑MM)&lt;/label&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;input id="startMonth" type="month" required /&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;label for="endMonth"&gt;End month (YYYY‑MM)&lt;/label&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;input id="endMonth" type="month" required /&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;!-- blank label to keep grid alignment --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;label&gt;&amp;nbsp;&lt;/label&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;button id="searchBtn" type="submit"&gt;Run search&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;button id="downloadBtn" type="button" disabled&gt;Download CSV&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="muted"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>Uses SCMD_PROVISIONAL_YYYYMM resources for each month in range.</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;/form&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;p id="status"&gt;&lt;/p&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;table id="resultsTable"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;thead&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;tr&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;th&gt;YEAR_MONTH&lt;/th&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;th&gt;Trust (ODS_CODE)&lt;/th&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;th&gt;VMP_SNOMED_CODE&lt;/th&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;th&gt;VMP_PRODUCT_NAME&lt;/th&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;th&gt;UNIT_OF_MEASURE_NAME&lt;/th&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;th class="number"&gt;TOTAL_QUANITY_IN_VMP_UNIT&lt;/th&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;th class="number"&gt;INDICATIVE_COST (£)&lt;/th&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;th&gt;SCMD month (resource id)&lt;/th&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;/tr&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/thead&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;tbody&gt;&lt;/tbody&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;/table&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;script&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>(function () {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>const API_URL =</p>
-<p class="p1"><span class="Apple-converted-space">        </span>"https://opendata.nhsbsa.net/api/3/action/datastore_search";</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">      </span>const $form = $("#queryForm");</p>
-<p class="p1"><span class="Apple-converted-space">      </span>const $drugName = $("#drugName");</p>
-<p class="p1"><span class="Apple-converted-space">      </span>const $startMonth = $("#startMonth");</p>
-<p class="p1"><span class="Apple-converted-space">      </span>const $endMonth = $("#endMonth");</p>
-<p class="p1"><span class="Apple-converted-space">      </span>const $status = $("#status");</p>
-<p class="p1"><span class="Apple-converted-space">      </span>const $tbody = $("#resultsTable tbody");</p>
-<p class="p1"><span class="Apple-converted-space">      </span>const $searchBtn = $("#searchBtn");</p>
-<p class="p1"><span class="Apple-converted-space">      </span>const $downloadBtn = $("#downloadBtn");</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">      </span>let currentDrugName = "";</p>
-<p class="p1"><span class="Apple-converted-space">      </span>let lastResults = [];</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">      </span>function setStatus(text) {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>$status.text(text || "");</p>
-<p class="p1"><span class="Apple-converted-space">      </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">      </span>function setBusy(isBusy) {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>$searchBtn.prop("disabled", isBusy);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">      </span>function setDownloadEnabled(enabled) {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>$downloadBtn.prop("disabled", !enabled || !lastResults.length);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">      </span>function parseMonthInput(value) {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>// value is "YYYY-MM"</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const parts = (value || "").split("-");</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (parts.length !== 2) return null;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const year = Number(parts[0]);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const month = Number(parts[1]);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (!year || !month || month &lt; 1 || month &gt; 12) return null;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>return { year, month };</p>
-<p class="p1"><span class="Apple-converted-space">      </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">      </span>function generateMonthRange(startVal, endVal) {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const start = parseMonthInput(startVal);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const end = parseMonthInput(endVal);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (!start || !end) {</p>
-<p class="p1"><span class="Apple-converted-space">          </span>throw new Error("Invalid month format");</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// Ensure start &lt;= end; swap if needed</p>
-<p class="p1"><span class="Apple-converted-space">        </span>let { year: sy, month: sm } = start;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>let { year: ey, month: em } = end;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (sy &gt; ey || (sy === ey &amp;&amp; sm &gt; em)) {</p>
-<p class="p1"><span class="Apple-converted-space">          </span>[sy, ey] = [ey, sy];</p>
-<p class="p1"><span class="Apple-converted-space">          </span>[sm, em] = [em, sm];</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>const ymStrings = [];</p>
-<p class="p1"><span class="Apple-converted-space">        </span>let y = sy;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>let m = sm;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>while (y &lt; ey || (y === ey &amp;&amp; m &lt;= em)) {</p>
-<p class="p1"><span class="Apple-converted-space">          </span>const mm = m &lt; 10 ? "0" + m : String(m);</p>
-<p class="p1"><span class="Apple-converted-space">          </span>ymStrings.push(String(y) + mm); // "YYYYMM"</p>
-<p class="p1"><span class="Apple-converted-space">          </span>m += 1;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>if (m === 13) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>m = 1;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>y += 1;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>return ymStrings;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">      </span>// Prefill last 12 months from "today" (based on browser date)</p>
-<p class="p1"><span class="Apple-converted-space">      </span>function prefillLast12Months() {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const today = new Date();</p>
-<p class="p1"><span class="Apple-converted-space">        </span>let endYear = today.getFullYear();</p>
-<p class="p1"><span class="Apple-converted-space">        </span>let endMonth = today.getMonth() + 1; // 1..12</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>let startYear = endYear;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>let startMonth = endMonth - 11; // last 12 months inclusive</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>while (startMonth &lt;= 0) {</p>
-<p class="p1"><span class="Apple-converted-space">          </span>startMonth += 12;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>startYear -= 1;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function ymToStr(year, month) {</p>
-<p class="p1"><span class="Apple-converted-space">          </span>return year + "-" + String(month).padStart(2, "0");</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>$startMonth.val(ymToStr(startYear, startMonth));</p>
-<p class="p1"><span class="Apple-converted-space">        </span>$endMonth.val(ymToStr(endYear, endMonth));</p>
-<p class="p1"><span class="Apple-converted-space">      </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">      </span>// Query a single SCMD month (SCMD_PROVISIONAL_YYYYMM)</p>
-<p class="p1"><span class="Apple-converted-space">      </span>function queryMonth(resourceId) {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const qObj = {</p>
-<p class="p1"><span class="Apple-converted-space">          </span>VMP_PRODUCT_NAME: currentDrugName,</p>
-<p class="p1"><span class="Apple-converted-space">        </span>};</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>return $.ajax({</p>
-<p class="p1"><span class="Apple-converted-space">          </span>url: API_URL,</p>
-<p class="p1"><span class="Apple-converted-space">          </span>dataType: "jsonp", // JSONP</p>
-<p class="p1"><span class="Apple-converted-space">          </span>data: {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>resource_id: resourceId,</p>
-<p class="p1"><span class="Apple-converted-space">            </span>limit: 5000,</p>
-<p class="p1"><span class="Apple-converted-space">            </span>q: JSON.stringify(qObj),</p>
-<p class="p1"><span class="Apple-converted-space">          </span>},</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}).then(</p>
-<p class="p1"><span class="Apple-converted-space">          </span>function (resp) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (!resp.success || !resp.result || !resp.result.records) {</p>
-<p class="p1"><span class="Apple-converted-space">              </span>console.warn("API error for " + resourceId, resp);</p>
-<p class="p1"><span class="Apple-converted-space">              </span>return [];</p>
-<p class="p1"><span class="Apple-converted-space">            </span>}</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const records = resp.result.records;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>records.forEach(function (r) {</p>
-<p class="p1"><span class="Apple-converted-space">              </span>r._resource_id = resourceId;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>});</p>
-<p class="p1"><span class="Apple-converted-space">            </span>return records;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>},</p>
-<p class="p1"><span class="Apple-converted-space">          </span>function (err) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>console.warn("Request failed for " + resourceId, err);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>return [];</p>
-<p class="p1"><span class="Apple-converted-space">          </span>}</p>
-<p class="p1"><span class="Apple-converted-space">        </span>);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">      </span>function renderTable(allRecords) {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>$tbody.empty();</p>
-<p class="p1"><span class="Apple-converted-space">        </span>lastResults = allRecords.slice(); // keep a copy for CSV</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (!allRecords.length) {</p>
-<p class="p1"><span class="Apple-converted-space">          </span>setStatus(</p>
-<p class="p1"><span class="Apple-converted-space">            </span>'No rows found for "' +</p>
-<p class="p1"><span class="Apple-converted-space">              </span>currentDrugName +</p>
-<p class="p1"><span class="Apple-converted-space">              </span>'" in the selected period.'</p>
-<p class="p1"><span class="Apple-converted-space">          </span>);</p>
-<p class="p1"><span class="Apple-converted-space">          </span>setDownloadEnabled(false);</p>
-<p class="p1"><span class="Apple-converted-space">          </span>return;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>// Sort by YEAR_MONTH then ODS_CODE</p>
-<p class="p1"><span class="Apple-converted-space">        </span>allRecords.sort(function (a, b) {</p>
-<p class="p1"><span class="Apple-converted-space">          </span>const ymA = String(a.YEAR_MONTH || "");</p>
-<p class="p1"><span class="Apple-converted-space">          </span>const ymB = String(b.YEAR_MONTH || "");</p>
-<p class="p1"><span class="Apple-converted-space">          </span>if (ymA === ymB) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>return String(a.ODS_CODE || "").localeCompare(</p>
-<p class="p1"><span class="Apple-converted-space">              </span>String(b.ODS_CODE || "")</p>
-<p class="p1"><span class="Apple-converted-space">            </span>);</p>
-<p class="p1"><span class="Apple-converted-space">          </span>}</p>
-<p class="p1"><span class="Apple-converted-space">          </span>return ymA.localeCompare(ymB);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>});</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>allRecords.forEach(function (row) {</p>
-<p class="p1"><span class="Apple-converted-space">          </span>const tr = document.createElement("tr");</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">          </span>function cell(text, cls) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const td = document.createElement("td");</p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (cls) td.className = cls;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>td.textContent = text == null ? "" : text;</p>
-<p class="p1"><span class="Apple-converted-space">            </span>tr.appendChild(td);</p>
-<p class="p1"><span class="Apple-converted-space">          </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">          </span>cell(row.YEAR_MONTH);</p>
-<p class="p1"><span class="Apple-converted-space">          </span>cell(row.ODS_CODE);</p>
-<p class="p1"><span class="Apple-converted-space">          </span>cell(row.VMP_SNOMED_CODE);</p>
-<p class="p1"><span class="Apple-converted-space">          </span>cell(row.VMP_PRODUCT_NAME);</p>
-<p class="p1"><span class="Apple-converted-space">          </span>cell(row.UNIT_OF_MEASURE_NAME);</p>
-<p class="p1"><span class="Apple-converted-space">          </span>cell(row.TOTAL_QUANITY_IN_VMP_UNIT, "number");</p>
-<p class="p1"><span class="Apple-converted-space">          </span>cell(row.INDICATIVE_COST, "number");</p>
-<p class="p1"><span class="Apple-converted-space">          </span>cell(row._resource_id);</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">          </span>$tbody.append(tr);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>});</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>setStatus(</p>
-<p class="p1"><span class="Apple-converted-space">          </span>'Loaded ' +</p>
-<p class="p1"><span class="Apple-converted-space">            </span>allRecords.length +</p>
-<p class="p1"><span class="Apple-converted-space">            </span>' rows for "' +</p>
-<p class="p1"><span class="Apple-converted-space">            </span>currentDrugName +</p>
-<p class="p1"><span class="Apple-converted-space">            </span>'".'</p>
-<p class="p1"><span class="Apple-converted-space">        </span>);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>setDownloadEnabled(true);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">      </span>function runSearch(event) {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>event.preventDefault();</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>const drug = $drugName.val().trim();</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const startVal = $startMonth.val();</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const endVal = $endMonth.val();</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (!drug || !startVal || !endVal) {</p>
-<p class="p1"><span class="Apple-converted-space">          </span>alert("Please fill in drug name, start month, and end month.");</p>
-<p class="p1"><span class="Apple-converted-space">          </span>return;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>currentDrugName = drug;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>$tbody.empty();</p>
-<p class="p1"><span class="Apple-converted-space">        </span>lastResults = [];</p>
-<p class="p1"><span class="Apple-converted-space">        </span>setDownloadEnabled(false);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>setBusy(true);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>setStatus("Building month list…");</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>let yearMonthStrings;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>try {</p>
-<p class="p1"><span class="Apple-converted-space">          </span>yearMonthStrings = generateMonthRange(startVal, endVal);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>} catch (e) {</p>
-<p class="p1"><span class="Apple-converted-space">          </span>setBusy(false);</p>
-<p class="p1"><span class="Apple-converted-space">          </span>alert("Invalid date range: " + e.message);</p>
-<p class="p1"><span class="Apple-converted-space">          </span>return;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (!yearMonthStrings.length) {</p>
-<p class="p1"><span class="Apple-converted-space">          </span>setBusy(false);</p>
-<p class="p1"><span class="Apple-converted-space">          </span>alert("Empty date range.");</p>
-<p class="p1"><span class="Apple-converted-space">          </span>return;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>const resourceIds = yearMonthStrings.map(function (ym) {</p>
-<p class="p1"><span class="Apple-converted-space">          </span>return "SCMD_PROVISIONAL_" + ym;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>});</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>let allRecords = [];</p>
-<p class="p1"><span class="Apple-converted-space">        </span>let index = 0;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>function next() {</p>
-<p class="p1"><span class="Apple-converted-space">          </span>if (index &gt;= resourceIds.length) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>renderTable(allRecords);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>setBusy(false);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>return;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">          </span>const rid = resourceIds[index];</p>
-<p class="p1"><span class="Apple-converted-space">          </span>index += 1;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">          </span>setStatus(</p>
-<p class="p1"><span class="Apple-converted-space">            </span>"Loading " +</p>
-<p class="p1"><span class="Apple-converted-space">              </span>currentDrugName +</p>
-<p class="p1"><span class="Apple-converted-space">              </span>" for " +</p>
-<p class="p1"><span class="Apple-converted-space">              </span>rid +</p>
-<p class="p1"><span class="Apple-converted-space">              </span>" (" +</p>
-<p class="p1"><span class="Apple-converted-space">              </span>index +</p>
-<p class="p1"><span class="Apple-converted-space">              </span>" of " +</p>
-<p class="p1"><span class="Apple-converted-space">              </span>resourceIds.length +</p>
-<p class="p1"><span class="Apple-converted-space">              </span>")…"</p>
-<p class="p1"><span class="Apple-converted-space">          </span>);</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">          </span>queryMonth(rid).then(function (records) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>allRecords = allRecords.concat(records);</p>
-<p class="p1"><span class="Apple-converted-space">            </span>next();</p>
-<p class="p1"><span class="Apple-converted-space">          </span>});</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>next();</p>
-<p class="p1"><span class="Apple-converted-space">      </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">      </span>function downloadCsv() {</p>
-<p class="p1"><span class="Apple-converted-space">        </span>if (!lastResults.length) {</p>
-<p class="p1"><span class="Apple-converted-space">          </span>alert("No data to download. Run a search first.");</p>
-<p class="p1"><span class="Apple-converted-space">          </span>return;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>const headers = [</p>
-<p class="p1"><span class="Apple-converted-space">          </span>"YEAR_MONTH",</p>
-<p class="p1"><span class="Apple-converted-space">          </span>"ODS_CODE",</p>
-<p class="p1"><span class="Apple-converted-space">          </span>"VMP_SNOMED_CODE",</p>
-<p class="p1"><span class="Apple-converted-space">          </span>"VMP_PRODUCT_NAME",</p>
-<p class="p1"><span class="Apple-converted-space">          </span>"UNIT_OF_MEASURE_NAME",</p>
-<p class="p1"><span class="Apple-converted-space">          </span>"TOTAL_QUANITY_IN_VMP_UNIT",</p>
-<p class="p1"><span class="Apple-converted-space">          </span>"INDICATIVE_COST",</p>
-<p class="p1"><span class="Apple-converted-space">          </span>"SCMD_RESOURCE_ID"</p>
-<p class="p1"><span class="Apple-converted-space">        </span>];</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>const rows = [];</p>
-<p class="p1"><span class="Apple-converted-space">        </span>rows.push(headers.join(","));</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>lastResults.forEach(function (r) {</p>
-<p class="p1"><span class="Apple-converted-space">          </span>const values = [</p>
-<p class="p1"><span class="Apple-converted-space">            </span>r.YEAR_MONTH,</p>
-<p class="p1"><span class="Apple-converted-space">            </span>r.ODS_CODE,</p>
-<p class="p1"><span class="Apple-converted-space">            </span>r.VMP_SNOMED_CODE,</p>
-<p class="p1"><span class="Apple-converted-space">            </span>r.VMP_PRODUCT_NAME,</p>
-<p class="p1"><span class="Apple-converted-space">            </span>r.UNIT_OF_MEASURE_NAME,</p>
-<p class="p1"><span class="Apple-converted-space">            </span>r.TOTAL_QUANITY_IN_VMP_UNIT,</p>
-<p class="p1"><span class="Apple-converted-space">            </span>r.INDICATIVE_COST,</p>
-<p class="p1"><span class="Apple-converted-space">            </span>r._resource_id</p>
-<p class="p1"><span class="Apple-converted-space">          </span>].map(function (v) {</p>
-<p class="p1"><span class="Apple-converted-space">            </span>if (v == null) v = "";</p>
-<p class="p1"><span class="Apple-converted-space">            </span>const s = String(v).replace(/"/g, '""');</p>
-<p class="p1"><span class="Apple-converted-space">            </span>return '"' + s + '"';</p>
-<p class="p1"><span class="Apple-converted-space">          </span>});</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">          </span>rows.push(values.join(","));</p>
-<p class="p1"><span class="Apple-converted-space">        </span>});</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>const csvContent = rows.join("\r\n");</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const blob = new Blob([csvContent], {</p>
-<p class="p1"><span class="Apple-converted-space">          </span>type: "text/csv;charset=utf-8;",</p>
-<p class="p1"><span class="Apple-converted-space">        </span>});</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const url = URL.createObjectURL(blob);</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>const a = document.createElement("a");</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const safeDrug = currentDrugName</p>
-<p class="p1"><span class="Apple-converted-space">          </span>? currentDrugName.replace(/[^\w]+/g, "_")</p>
-<p class="p1"><span class="Apple-converted-space">          </span>: "scmd_data";</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>const now = new Date();</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const y = now.getFullYear();</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const m = String(now.getMonth() + 1).padStart(2, "0");</p>
-<p class="p1"><span class="Apple-converted-space">        </span>const d = String(now.getDate()).padStart(2, "0");</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">        </span>a.href = url;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>a.download = safeDrug + "_scmd_" + y + m + d + ".csv";</p>
-<p class="p1"><span class="Apple-converted-space">        </span>document.body.appendChild(a);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>a.click();</p>
-<p class="p1"><span class="Apple-converted-space">        </span>document.body.removeChild(a);</p>
-<p class="p1"><span class="Apple-converted-space">        </span>URL.revokeObjectURL(url);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">      </span>// Hook everything up</p>
-<p class="p1"><span class="Apple-converted-space">      </span>$form.on("submit", runSearch);</p>
-<p class="p1"><span class="Apple-converted-space">      </span>$downloadBtn.on("click", downloadCsv);</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">      </span>// Prefill the last 12 months when the page loads</p>
-<p class="p1"><span class="Apple-converted-space">      </span>prefillLast12Months();</p>
-<p class="p1"><span class="Apple-converted-space">    </span>})();</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;/script&gt;</p>
-<p class="p1">&lt;/body&gt;</p>
-<p class="p1">&lt;/html&gt;</p>
+  <h1>Secondary Care Medicines Search</h1>
+  <p class="lead">
+    Queries the NHSBSA <strong>Provisional Secondary Care Medicines Data (SCMD)</strong> via the
+    CKAN Data API and filters by <code>VMP_PRODUCT_NAME</code>.
+  </p>
+
+  <form id="queryForm">
+    <div>
+      <label for="drugName">Drug name (VMP_PRODUCT_NAME contains…)</label>
+      <input id="drugName" type="text" placeholder="e.g. Berotralstat" required />
+    </div>
+
+    <div>
+      <label for="startMonth">Start month (YYYY‑MM)</label>
+      <input id="startMonth" type="month" required />
+    </div>
+
+    <div>
+      <label for="endMonth">End month (YYYY‑MM)</label>
+      <input id="endMonth" type="month" required />
+    </div>
+
+    <div>
+      <!-- blank label to keep grid alignment -->
+      <label>&nbsp;</label>
+      <button id="searchBtn" type="submit">Run search</button>
+      <button id="downloadBtn" type="button" disabled>Download CSV</button>
+      <div class="muted">
+        Uses SCMD_PROVISIONAL_YYYYMM resources for each month in range.
+      </div>
+    </div>
+  </form>
+
+  <p id="status"></p>
+
+  <table id="resultsTable">
+    <thead>
+      <tr>
+        <th>YEAR_MONTH</th>
+        <th>Trust (ODS_CODE)</th>
+        <th>VMP_SNOMED_CODE</th>
+        <th>VMP_PRODUCT_NAME</th>
+        <th>UNIT_OF_MEASURE_NAME</th>
+        <th class="number">TOTAL_QUANITY_IN_VMP_UNIT</th>
+        <th class="number">INDICATIVE_COST (£)</th>
+        <th>SCMD month (resource id)</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    (function () {
+      const API_URL = "https://opendata.nhsbsa.net/api/3/action/datastore_search";
+
+      const $form = $("#queryForm");
+      const $drugName = $("#drugName");
+      const $startMonth = $("#startMonth");
+      const $endMonth = $("#endMonth");
+      const $status = $("#status");
+      const $tbody = $("#resultsTable tbody");
+      const $searchBtn = $("#searchBtn");
+      const $downloadBtn = $("#downloadBtn");
+
+      let currentDrugName = "";
+      let lastResults = [];
+
+      function setStatus(text) {
+        $status.text(text || "");
+      }
+
+      function setBusy(isBusy) {
+        $searchBtn.prop("disabled", isBusy);
+      }
+
+      function setDownloadEnabled(enabled) {
+        $downloadBtn.prop("disabled", !enabled || !lastResults.length);
+      }
+
+      function parseMonthInput(value) {
+        // value is "YYYY-MM"
+        const parts = (value || "").split("-");
+        if (parts.length !== 2) return null;
+        const year = Number(parts[0]);
+        const month = Number(parts[1]);
+        if (!year || !month || month < 1 || month > 12) return null;
+        return { year, month };
+      }
+
+      function generateMonthRange(startVal, endVal) {
+        const start = parseMonthInput(startVal);
+        const end = parseMonthInput(endVal);
+        if (!start || !end) {
+          throw new Error("Invalid month format");
+        }
+
+        // Ensure start <= end; swap if needed
+        let { year: sy, month: sm } = start;
+        let { year: ey, month: em } = end;
+        if (sy > ey || (sy === ey && sm > em)) {
+          [sy, ey] = [ey, sy];
+          [sm, em] = [em, sm];
+        }
+
+        const ymStrings = [];
+        let y = sy;
+        let m = sm;
+        while (y < ey || (y === ey && m <= em)) {
+          const mm = m < 10 ? "0" + m : String(m);
+          ymStrings.push(String(y) + mm); // "YYYYMM"
+          m += 1;
+          if (m === 13) {
+            m = 1;
+            y += 1;
+          }
+        }
+        return ymStrings;
+      }
+
+      // Prefill last 12 months from "today" (based on browser date)
+      function prefillLast12Months() {
+        const today = new Date();
+        let endYear = today.getFullYear();
+        let endMonth = today.getMonth() + 1; // 1..12
+
+        let startYear = endYear;
+        let startMonth = endMonth - 11; // last 12 months inclusive
+
+        while (startMonth <= 0) {
+          startMonth += 12;
+          startYear -= 1;
+        }
+
+        function ymToStr(year, month) {
+          return year + "-" + String(month).padStart(2, "0");
+        }
+
+        $startMonth.val(ymToStr(startYear, startMonth));
+        $endMonth.val(ymToStr(endYear, endMonth));
+      }
+
+      // Query a single SCMD month (SCMD_PROVISIONAL_YYYYMM)
+      function queryMonth(resourceId) {
+        const qObj = {
+          VMP_PRODUCT_NAME: currentDrugName,
+        };
+
+        return $.ajax({
+          url: API_URL,
+          dataType: "jsonp", // JSONP
+          data: {
+            resource_id: resourceId,
+            limit: 5000,
+            q: JSON.stringify(qObj),
+          },
+        }).then(
+          function (resp) {
+            if (!resp.success || !resp.result || !resp.result.records) {
+              console.warn("API error for " + resourceId, resp);
+              return [];
+            }
+            const records = resp.result.records;
+            records.forEach(function (r) {
+              r._resource_id = resourceId;
+            });
+            return records;
+          },
+          function (err) {
+            console.warn("Request failed for " + resourceId, err);
+            return [];
+          }
+        );
+      }
+
+      function renderTable(allRecords) {
+        $tbody.empty();
+        lastResults = allRecords.slice(); // keep a copy for CSV
+
+        if (!allRecords.length) {
+          setStatus('No rows found for "' + currentDrugName + '" in the selected period.');
+          setDownloadEnabled(false);
+          return;
+        }
+
+        // Sort by YEAR_MONTH then ODS_CODE
+        allRecords.sort(function (a, b) {
+          const ymA = String(a.YEAR_MONTH || "");
+          const ymB = String(b.YEAR_MONTH || "");
+          if (ymA === ymB) {
+            return String(a.ODS_CODE || "").localeCompare(String(b.ODS_CODE || ""));
+          }
+          return ymA.localeCompare(ymB);
+        });
+
+        allRecords.forEach(function (row) {
+          const tr = document.createElement("tr");
+
+          function cell(text, cls) {
+            const td = document.createElement("td");
+            if (cls) td.className = cls;
+            td.textContent = text == null ? "" : text;
+            tr.appendChild(td);
+          }
+
+          cell(row.YEAR_MONTH);
+          cell(row.ODS_CODE);
+          cell(row.VMP_SNOMED_CODE);
+          cell(row.VMP_PRODUCT_NAME);
+          cell(row.UNIT_OF_MEASURE_NAME);
+          cell(row.TOTAL_QUANITY_IN_VMP_UNIT, "number");
+          cell(row.INDICATIVE_COST, "number");
+          cell(row._resource_id);
+
+          $tbody.append(tr);
+        });
+
+        setStatus('Loaded ' + allRecords.length + ' rows for "' + currentDrugName + '".');
+        setDownloadEnabled(true);
+      }
+
+      function runSearch(event) {
+        event.preventDefault();
+
+        const drug = $drugName.val().trim();
+        const startVal = $startMonth.val();
+        const endVal = $endMonth.val();
+
+        if (!drug || !startVal || !endVal) {
+          alert("Please fill in drug name, start month, and end month.");
+          return;
+        }
+
+        currentDrugName = drug;
+        $tbody.empty();
+        lastResults = [];
+        setDownloadEnabled(false);
+        setBusy(true);
+        setStatus("Building month list…");
+
+        let yearMonthStrings;
+        try {
+          yearMonthStrings = generateMonthRange(startVal, endVal);
+        } catch (e) {
+          setBusy(false);
+          alert("Invalid date range: " + e.message);
+          return;
+        }
+
+        if (!yearMonthStrings.length) {
+          setBusy(false);
+          alert("Empty date range.");
+          return;
+        }
+
+        const resourceIds = yearMonthStrings.map(function (ym) {
+          return "SCMD_PROVISIONAL_" + ym;
+        });
+
+        let allRecords = [];
+        let index = 0;
+
+        function next() {
+          if (index >= resourceIds.length) {
+            renderTable(allRecords);
+            setBusy(false);
+            return;
+          }
+
+          const rid = resourceIds[index];
+          index += 1;
+
+          setStatus("Loading " + currentDrugName + " for " + rid + " (" + index + " of " + resourceIds.length + ")…");
+
+          queryMonth(rid).then(function (records) {
+            allRecords = allRecords.concat(records);
+            next();
+          });
+        }
+
+        next();
+      }
+
+      function downloadCsv() {
+        if (!lastResults.length) {
+          alert("No data to download. Run a search first.");
+          return;
+        }
+
+        const headers = [
+          "YEAR_MONTH",
+          "ODS_CODE",
+          "VMP_SNOMED_CODE",
+          "VMP_PRODUCT_NAME",
+          "UNIT_OF_MEASURE_NAME",
+          "TOTAL_QUANITY_IN_VMP_UNIT",
+          "INDICATIVE_COST",
+          "SCMD_RESOURCE_ID"
+        ];
+
+        const rows = [];
+        rows.push(headers.join(","));
+
+        lastResults.forEach(function (r) {
+          const values = [
+            r.YEAR_MONTH,
+            r.ODS_CODE,
+            r.VMP_SNOMED_CODE,
+            r.VMP_PRODUCT_NAME,
+            r.UNIT_OF_MEASURE_NAME,
+            r.TOTAL_QUANITY_IN_VMP_UNIT,
+            r.INDICATIVE_COST,
+            r._resource_id
+          ].map(function (v) {
+            if (v == null) v = "";
+            const s = String(v).replace(/"/g, '""');
+            return '"' + s + '"';
+          });
+
+          rows.push(values.join(","));
+        });
+
+        const csvContent = rows.join("\r\n");
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        const safeDrug = currentDrugName ? currentDrugName.replace(/[^\w]+/g, "_") : "scmd_data";
+
+        const now = new Date();
+        const y = now.getFullYear();
+        const m = String(now.getMonth() + 1).padStart(2, "0");
+        const d = String(now.getDate()).padStart(2, "0");
+
+        a.href = url;
+        a.download = safeDrug + "_scmd_" + y + m + d + ".csv";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+
+      // Hook everything up
+      $form.on("submit", runSearch);
+      $downloadBtn.on("click", downloadCsv);
+
+      // Prefill the last 12 months when the page loads
+      prefillLast12Months();
+    })();
+  </script>
 </body>
 </html>
