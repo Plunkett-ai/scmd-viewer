@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>SCMD Drug Search (NHSBSA)</title>
+
+  <!-- jQuery for JSONP calls to the CKAN Data API -->
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 1.5rem;
+      max-width: 1200px;
+    }
+    h1 {
+      margin-bottom: 0.5rem;
+    }
+    p.lead {
+      margin-top: 0;
+      color: #444;
+      font-size: 0.95rem;
+    }
+    form {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 0.75rem 1.5rem;
+      align-items: end;
+      margin: 1rem 0;
+      padding: 0.75rem 1rem;
+      border-radius: 6px;
+      border: 1px solid #ddd;
+      background: #fafafa;
+    }
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+      font-size: 0.9rem;
+    }
+    input[type="text"],
+    input[type="month"] {
+      width: 100%;
+      padding: 0.35rem 0.5rem;
+      font-size: 0.9rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+    button {
+      padding: 0.5rem 1rem;
+      font-size: 0.95rem;
+      border-radius: 4px;
+      border: 1px solid #0072ce;
+      background: #0072ce;
+      color: white;
+      cursor: pointer;
+    }
+    button:disabled {
+      opacity: 0.6;
+      cursor: default;
+    }
+    #status {
+      margin-top: 0.5rem;
+      font-style: italic;
+      font-size: 0.9rem;
+    }
+    table {
+      margin-top: 1rem;
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 0.85rem;
+    }
+    thead {
+      position: sticky;
+      top: 0;
+      background: #f0f0f0;
+      z-index: 1;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 0.25rem 0.5rem;
+      text-align: left;
+      vertical-align: top;
+    }
+    tbody tr:nth-child(even) {
+      background: #fafafa;
+    }
+    .number {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+    .muted {
+      color: #666;
+      font-size: 0.8rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>Secondary Care Medicines Search</h1>
+  <p class="lead">
+    Queries the NHSBSA <strong>Provisional Secondary Care Medicines Data (SCMD)</strong> via the
+    CKAN Data API and filters by <code>VMP_PRODUCT_NAME</code>.  [oai_citation:1‡opendata.nhsbsa.net](https://opendata.nhsbsa.net/api/1/util/snippet/api_info.html?example_field_id=TOTAL_QUANITY_IN_VMP_UNIT&example_field_type=FLOAT&resource_id=SCMD_PROVISIONAL_202112)
+  </p>
+
+  <form id="queryForm">
+    <div>
+      <label for="drugName">Drug name (VMP_PRODUCT_NAME contains…)</label>
+      <input
+        id="drugName"
+        type="text"
+        placeholder="e.g. Berotralstat"
+        required
+      />
+    </div>
+
+    <div>
+      <label for="startMonth">Start month (YYYY‑MM)</label>
+      <input id="startMonth" type="month" required />
+    </div>
+
+    <div>
+      <label for="endMonth">End month (YYYY‑MM)</label>
+      <input id="endMonth" type="month" required />
+    </div>
+
+    <div>
+      <button id="searchBtn" type="submit">Run search</button>
+      <div class="muted">
+        Uses SCMD_PROVISIONAL_YYYYMM resources for each month in range.
+      </div>
+    </div>
+  </form>
+
+  <p id="status"></p>
+
+  <table id="resultsTable">
+    <thead>
+      <tr>
+        <th>YEAR_MONTH</th>
+        <th>Trust (ODS_CODE)</th>
+        <th>VMP_SNOMED_CODE</th>
+        <th>VMP_PRODUCT_NAME</th>
+        <th>UNIT_OF_MEASURE_NAME</th>
+        <th class="number">TOTAL_QUANITY_IN_VMP_UNIT</th>
+        <th class="number">INDICATIVE_COST (£)</th>
+        <th>SCMD month (resource id)</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    (function () {
+      const API_URL =
+        "https://opendata.nhsbsa.net/api/3/action/datastore_search"; // CKAN DataStore API  [oai_citation:2‡opendata.nhsbsa.net](https://opendata.nhsbsa.net/api/1/util/snippet/api_info.html?example_field_id=TOTAL_QUANITY_IN_VMP_UNIT&example_field_type=FLOAT&resource_id=SCMD_PROVISIONAL_202112)
+
+      const $form = $("#queryForm");
+      const $drugName = $("#drugName");
+      const $startMonth = $("#startMonth");
+      const $endMonth = $("#endMonth");
+      const $status = $("#status");
+      const $tbody = $("#resultsTable tbody");
+      const $searchBtn = $("#searchBtn");
+
+      let currentDrugName = "";
+
+      function setStatus(text) {
+        $status.text(text || "");
+      }
+
+      function setBusy(isBusy) {
+        $searchBtn.prop("disabled", isBusy);
+      }
+
+      function parseMonthInput(value) {
+        // value is "YYYY-MM"
+        const parts = (value || "").split("-");
+        if (parts.length !== 2) return null;
+        const year = Number(parts[0]);
+        const month = Number(parts[1]);
+        if (!year || !month || month < 1 || month > 12) return null;
+        return { year, month };
+      }
+
+      function generateMonthRange(startVal, endVal) {
+        const start = parseMonthInput(startVal);
+        const end = parseMonthInput(endVal);
+        if (!start || !end) {
+          throw new Error("Invalid month format");
+        }
+
+        // Ensure start <= end; swap if needed
+        let { year: sy, month: sm } = start;
+        let { year: ey, month: em } = end;
+        if (sy > ey || (sy === ey && sm > em)) {
+          [sy, ey] = [ey, sy];
+          [sm, em] = [em, sm];
+        }
+
+        const ymStrings = [];
+        let y = sy;
+        let m = sm;
+        while (y < ey || (y === ey && m <= em)) {
+          const mm = m < 10 ? "0" + m : String(m);
+          ymStrings.push(String(y) + mm); // "YYYYMM"
+          m += 1;
+          if (m === 13) {
+            m = 1;
+            y += 1;
+          }
+        }
+        return ymStrings;
+      }
+
+      // Query a single SCMD month (SCMD_PROVISIONAL_YYYYMM) for rows where VMP_PRODUCT_NAME contains the current drug
+      function queryMonth(resourceId) {
+        const qObj = {
+          VMP_PRODUCT_NAME: currentDrugName,
+        };
+
+        return $.ajax({
+          url: API_URL,
+          dataType: "jsonp", // JSONP as in NHSBSA example  [oai_citation:3‡opendata.nhsbsa.net](https://opendata.nhsbsa.net/api/1/util/snippet/api_info.html?example_field_id=TOTAL_QUANITY_IN_VMP_UNIT&example_field_type=FLOAT&resource_id=SCMD_PROVISIONAL_202112)
+          data: {
+            resource_id: resourceId,
+            limit: 5000, // should be plenty for one VMP across trusts
+            q: JSON.stringify(qObj),
+          },
+        }).then(
+          function (resp) {
+            if (!resp.success || !resp.result || !resp.result.records) {
+              console.warn("API error for " + resourceId, resp);
+              return [];
+            }
+            const records = resp.result.records;
+            records.forEach(function (r) {
+              r._resource_id = resourceId;
+            });
+            return records;
+          },
+          function (err) {
+            console.warn("Request failed for " + resourceId, err);
+            return [];
+          }
+        );
+      }
+
+      function renderTable(allRecords) {
+        $tbody.empty();
+
+        if (!allRecords.length) {
+          setStatus(
+            "No rows found for \"" +
+              currentDrugName +
+              "\" in the selected period."
+          );
+          return;
+        }
+
+        // Sort by YEAR_MONTH then ODS_CODE
+        allRecords.sort(function (a, b) {
+          const ymA = String(a.YEAR_MONTH || "");
+          const ymB = String(b.YEAR_MONTH || "");
+          if (ymA === ymB) {
+            return String(a.ODS_CODE || "").localeCompare(
+              String(b.ODS_CODE || "")
+            );
+          }
+          return ymA.localeCompare(ymB);
+        });
+
+        allRecords.forEach(function (row) {
+          const tr = document.createElement("tr");
+
+          function cell(text, cls) {
+            const td = document.createElement("td");
+            if (cls) td.className = cls;
+            td.textContent = text == null ? "" : text;
+            tr.appendChild(td);
+          }
+
+          cell(row.YEAR_MONTH);
+          cell(row.ODS_CODE);
+          cell(row.VMP_SNOMED_CODE);
+          cell(row.VMP_PRODUCT_NAME);
+          cell(row.UNIT_OF_MEASURE_NAME);
+          cell(row.TOTAL_QUANITY_IN_VMP_UNIT, "number");
+          cell(row.INDICATIVE_COST, "number");
+          cell(row._resource_id);
+
+          $tbody.append(tr);
+        });
+
+        setStatus(
+          "Loaded " +
+            allRecords.length +
+            " rows for \"" +
+            currentDrugName +
+            "\"."
+        );
+      }
+
+      function runSearch(event) {
+        event.preventDefault();
+
+        const drug = $drugName.val().trim();
+        const startVal = $startMonth.val();
+        const endVal = $endMonth.val();
+
+        if (!drug || !startVal || !endVal) {
+          alert("Please fill in drug name, start month, and end month.");
+          return;
+        }
+
+        currentDrugName = drug;
+        $tbody.empty();
+        setBusy(true);
+        setStatus("Building month list…");
+
+        let yearMonthStrings;
+        try {
+          yearMonthStrings = generateMonthRange(startVal, endVal);
+        } catch (e) {
+          setBusy(false);
+          alert("Invalid date range: " + e.message);
+          return;
+        }
+
+        if (!yearMonthStrings.length) {
+          setBusy(false);
+          alert("Empty date range.");
+          return;
+        }
+
+        const resourceIds = yearMonthStrings.map(function (ym) {
+          return "SCMD_PROVISIONAL_" + ym;
+        });
+
+        let allRecords = [];
+        let index = 0;
+
+        function next() {
+          if (index >= resourceIds.length) {
+            renderTable(allRecords);
+            setBusy(false);
+            return;
+          }
+
+          const rid = resourceIds[index];
+          index += 1;
+
+          setStatus(
+            "Loading " +
+              currentDrugName +
+              " for " +
+              rid +
+              " (" +
+              index +
+              " of " +
+              resourceIds.length +
+              ")…"
+          );
+
+          queryMonth(rid).then(function (records) {
+            allRecords = allRecords.concat(records);
+            next();
+          });
+        }
+
+        next();
+      }
+
+      $form.on("submit", runSearch);
+    })();
+  </script>
+</body>
+</html>
